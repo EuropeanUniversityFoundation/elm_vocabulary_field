@@ -1,0 +1,4 @@
+services:
+  elm_vocabulary_field.provider:
+    class: Drupal\elm_vocabulary_field\ControlledVocabularyProvider
+    arguments: []

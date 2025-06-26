@@ -1,0 +1,28 @@
+{
+    "name": "euf/elm_vocabulary_field",
+    "type": "drupal-module",
+    "description": "Provides a field type for ELM controlled vocabularies.",
+    "keywords": [
+        "Drupal",
+        "Erasmus Without Paper",
+        "European Learning Model",
+        "Field type"
+    ],
+    "homepage": "https://github.com/EuropeanUniversityFoundation/elm_vocabulary_field",
+    "support": {
+        "issues": "https://github.com/EuropeanUniversityFoundation/elm_vocabulary_field/issues",
+        "source": "https://github.com/EuropeanUniversityFoundation/elm_vocabulary_field"
+    },
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Tiago Simões",
+            "email": "tiago.simoes@uni-foundation.eu",
+            "role": "Maintainer"
+        }
+    ],
+    "require": {
+        "euf/elm_vocabularies": "*"
+    },
+    "minimum-stability": "dev"
+}

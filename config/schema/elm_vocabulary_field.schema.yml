@@ -1,0 +1,51 @@
+# Field storage.
+# Defines the vocabulary for allowed values validation.
+field.storage_settings.elm_controlled_vocabulary:
+  type: mapping
+  label: ELM vocabulary storage settings
+  mapping:
+    vocabulary:
+      type: string
+      label: Controlled vocabulary
+
+# Field instance.
+# Further limit the allowed values from the vocabulary.
+field.field_settings.elm_controlled_vocabulary:
+  type: mapping
+  label: ELM vocabulary field settings
+  mapping:
+    allow_selection:
+      type: sequence
+      label: Allow selection
+      sequence:
+        type: boolean
+
+# Default value.
+# Subject to allowed values validation.
+field.value.elm_controlled_vocabulary:
+  type: mapping
+  label: Default value
+  mapping:
+    value:
+      type: string
+      label: Value
+
+# Field widget.
+# Prefix label with code.
+field.widget.settings.elm_controlled_vocabulary:
+  type: mapping
+  label: Default widget settings
+  mapping:
+    prefix:
+      type: boolean
+      label: Prefix the label with the respective code.
+
+# Field formatter.
+# Prefix label with code.
+field.formatter.settings.elm_controlled_vocabulary_default:
+  type: mapping
+  label: Default formatter settings
+  mapping:
+    prefix:
+      type: boolean
+      label: Prefix the label with the respective code.

@@ -1,0 +1,8 @@
+name: 'ELM vocabulary field'
+type: module
+description: 'Provides a field type for ELM controlled vocabularies'
+package: Field types
+core_version_requirement: ^10.4 || ^11
+dependencies:
+  - drupal:field
+  - drupal:options
