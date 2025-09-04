@@ -17,6 +17,8 @@ field.field_settings.elm_controlled_vocabulary:
     allow_selection:
       type: sequence
       label: Allow selection
+      constraints:
+        FullyValidatable: ~
       sequence:
         type: boolean
 
@@ -29,10 +31,12 @@ field.value.elm_controlled_vocabulary:
     value:
       type: string
       label: Value
+      constraints:
+        NotBlank: []
 
 # Field widget.
 # Prefix label with code.
-field.widget.settings.elm_controlled_vocabulary:
+field.widget.settings.elm_controlled_vocabulary_select:
   type: mapping
   label: Default widget settings
   mapping:
