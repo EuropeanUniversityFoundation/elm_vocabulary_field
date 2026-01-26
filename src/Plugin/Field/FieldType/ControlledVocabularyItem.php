@@ -26,8 +26,6 @@ use Drupal\Core\TypedData\DataDefinition;
 )]
 final class ControlledVocabularyItem extends FieldItemBase {
 
-  const DEFAULT_LANGUAGE = 'en';
-
   /**
    * {@inheritdoc}
    */
@@ -74,7 +72,7 @@ final class ControlledVocabularyItem extends FieldItemBase {
       // DI is not supported here.
       $provider = \Drupal::service('elm_vocabulary_field.provider');
       $vocabulary = $provider->getVocabulary($vocabulary_id);
-      $labeled_list = $vocabulary->getLabeledList(self::DEFAULT_LANGUAGE);
+      $labeled_list = $vocabulary->getLabeledList();
     }
     else {
       $labeled_list = [];
@@ -127,7 +125,7 @@ final class ControlledVocabularyItem extends FieldItemBase {
 
     $vocabulary_id = $settings['vocabulary'];
     $vocabulary = $provider->getVocabulary($vocabulary_id);
-    $labeled_list = $vocabulary->getLabeledList(self::DEFAULT_LANGUAGE);
+    $labeled_list = $vocabulary->getLabeledList();
 
     $allow_storage = array_keys($labeled_list);
     $allow_selection = $settings['allow_selection'];
@@ -194,7 +192,7 @@ final class ControlledVocabularyItem extends FieldItemBase {
 
     $vocabulary_id = $field_definition->getSetting('vocabulary');
     $vocabulary = $provider->getVocabulary($vocabulary_id);
-    $labeled_list = $vocabulary->getLabeledList(self::DEFAULT_LANGUAGE);
+    $labeled_list = $vocabulary->getLabeledList();
 
     $values['value'] = array_rand($labeled_list);
     return $values;

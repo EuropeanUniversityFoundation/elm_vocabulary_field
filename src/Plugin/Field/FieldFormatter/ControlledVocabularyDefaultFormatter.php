@@ -24,8 +24,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 )]
 final class ControlledVocabularyDefaultFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
-  const DEFAULT_LANGUAGE = 'en';
-
   /**
    * The controlled vocabulary provider.
    *
@@ -110,7 +108,7 @@ final class ControlledVocabularyDefaultFormatter extends FormatterBase implement
     foreach ($items as $delta => $item) {
 
       if ($item->value) {
-        $labeled_list = $vocabulary->getLabeledList(self::DEFAULT_LANGUAGE);
+        $labeled_list = $vocabulary->getLabeledList();
         $label = $this->t('@label', ['@label' => $labeled_list[$item->value]]);
 
         $markup = ($this->getSetting('prefix'))

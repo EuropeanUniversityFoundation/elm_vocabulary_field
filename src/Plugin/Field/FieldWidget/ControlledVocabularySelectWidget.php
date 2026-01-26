@@ -25,8 +25,6 @@ use Symfony\Component\Validator\ConstraintViolationInterface;
 )]
 final class ControlledVocabularySelectWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
-  const DEFAULT_LANGUAGE = 'en';
-
   /**
    * The controlled vocabulary provider.
    *
@@ -103,7 +101,7 @@ final class ControlledVocabularySelectWidget extends WidgetBase implements Conta
 
     if (!empty($vocabulary_id)) {
       $vocabulary = $this->vocabularyProvider->getVocabulary($vocabulary_id);
-      $labeled_list = $vocabulary->getLabeledList(self::DEFAULT_LANGUAGE);
+      $labeled_list = $vocabulary->getLabeledList();
     }
     else {
       $labeled_list = [];
