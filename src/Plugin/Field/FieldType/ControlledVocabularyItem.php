@@ -82,7 +82,8 @@ final class ControlledVocabularyItem extends FieldItemBase {
 
     foreach ($labeled_list as $key => $value) {
       if (is_string($value)) {
-        $options[$key] = $this->t('@label', ['@label' => $value]);
+        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+        $options[$key] = $this->t($value);
       }
     }
 

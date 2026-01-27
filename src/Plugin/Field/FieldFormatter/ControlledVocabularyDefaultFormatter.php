@@ -109,7 +109,8 @@ final class ControlledVocabularyDefaultFormatter extends FormatterBase implement
 
       if ($item->value) {
         $labeled_list = $vocabulary->getLabeledList();
-        $label = $this->t('@label', ['@label' => $labeled_list[$item->value]]);
+        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+        $label = $this->t($labeled_list[$item->value]);
 
         $markup = ($this->getSetting('prefix'))
           ? $item->value . ' - ' . $label

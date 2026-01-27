@@ -22,7 +22,7 @@
         }
     ],
     "require": {
-        "euf/elm_vocabularies": "*",
+        "euf/elm_vocabularies": "^0.1",
         "gettext/gettext": "^5.7"
     },
     "minimum-stability": "dev"

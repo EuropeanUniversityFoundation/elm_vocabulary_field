@@ -92,10 +92,6 @@ msgstr "Sim"
 msgid "No"
 msgstr "Não"
 
-#: modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldFormatter/ControlledVocabularyDefaultFormatter.php:114 modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldType/ControlledVocabularyItem.php:87 modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldWidget/ControlledVocabularySelectWidget.php:122
-msgid "@label"
-msgstr "@label"
-
 #: modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldFormatter/ControlledVocabularyDefaultFormatter.php:22
 msgid "Default"
 msgstr "Predefinido"
