@@ -1,0 +1,6 @@
+services:
+  elm_vocabulary_field.merge:
+    class: Drupal\elm_vocabulary_field\Command\MergeCommand
+    arguments: ['@elm_vocabulary_field.merge']
+    tags:
+      - { name: console.command }
