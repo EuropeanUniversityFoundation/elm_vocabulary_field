@@ -1,0 +1,118 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: modules/custom/elm_vocabulary_field/elm_vocabulary_field.info.yml:0
+msgid "ELM vocabulary field"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/elm_vocabulary_field.info.yml:0
+msgid "Provides a field type for ELM controlled vocabularies"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/elm_vocabulary_field.info.yml:0
+msgid "Field types"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/config/schema/elm_vocabulary_field.schema.yml:0
+msgid "ELM vocabulary storage settings"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/config/schema/elm_vocabulary_field.schema.yml:0 modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldType/ControlledVocabularyItem.php:48;21
+msgid "Controlled vocabulary"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/config/schema/elm_vocabulary_field.schema.yml:0
+msgid "ELM vocabulary field settings"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/config/schema/elm_vocabulary_field.schema.yml:0 modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldType/ControlledVocabularyItem.php:93
+msgid "Allow selection"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/config/schema/elm_vocabulary_field.schema.yml:0
+msgid "Default value"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/config/schema/elm_vocabulary_field.schema.yml:0 modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldType/ControlledVocabularyItem.php:114
+msgid "Value"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/config/schema/elm_vocabulary_field.schema.yml:0
+msgid "Default widget settings"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/config/schema/elm_vocabulary_field.schema.yml:0;0
+msgid "Prefix the label with the respective code."
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/config/schema/elm_vocabulary_field.schema.yml:0
+msgid "Default formatter settings"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/ControlledVocabularyProvider.php:26
+msgid "Assessment type"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/ControlledVocabularyProvider.php:27
+msgid "Learning activity type"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/ControlledVocabularyProvider.php:28
+msgid "Learning opportunity type"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/ControlledVocabularyProvider.php:29
+msgid "Learning schedule type"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/ControlledVocabularyProvider.php:30
+msgid "Learning setting type"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/ControlledVocabularyProvider.php:31
+msgid "Mode of learning and assessment"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldFormatter/ControlledVocabularyDefaultFormatter.php:82 modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldWidget/ControlledVocabularySelectWidget.php:79
+msgid "Prefix the label with the respective code"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldFormatter/ControlledVocabularyDefaultFormatter.php:93 modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldWidget/ControlledVocabularySelectWidget.php:90
+msgid "Prefix the label with the respective code: @bool"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldFormatter/ControlledVocabularyDefaultFormatter.php:95 modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldWidget/ControlledVocabularySelectWidget.php:92
+msgid "Yes"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldFormatter/ControlledVocabularyDefaultFormatter.php:96 modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldWidget/ControlledVocabularySelectWidget.php:93
+msgid "No"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldFormatter/ControlledVocabularyDefaultFormatter.php:22
+msgid "Default"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldType/ControlledVocabularyItem.php:95
+msgid "If @condition then @result."
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldType/ControlledVocabularyItem.php:96
+msgid "no values are checked"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldType/ControlledVocabularyItem.php:97
+msgid "all values can be selected"
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldType/ControlledVocabularyItem.php:22
+msgid "Choice of ELM controlled vocabularies."
+msgstr ""
+
+#: modules/custom/elm_vocabulary_field/src/Plugin/Field/FieldWidget/ControlledVocabularySelectWidget.php:23
+msgid "Select list"
+msgstr ""
+

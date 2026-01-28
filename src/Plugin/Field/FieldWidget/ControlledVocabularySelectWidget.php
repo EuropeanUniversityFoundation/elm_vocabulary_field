@@ -25,8 +25,6 @@ use Symfony\Component\Validator\ConstraintViolationInterface;
 )]
 final class ControlledVocabularySelectWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
-  const DEFAULT_LANGUAGE = 'en';
-
   /**
    * The controlled vocabulary provider.
    *
@@ -103,29 +101,27 @@ final class ControlledVocabularySelectWidget extends WidgetBase implements Conta
 
     if (!empty($vocabulary_id)) {
       $vocabulary = $this->vocabularyProvider->getVocabulary($vocabulary_id);
-      $labeled_list = $vocabulary->getLabeledList(self::DEFAULT_LANGUAGE);
+      $labeled_list = $vocabulary->getLabeledList();
     }
     else {
       $labeled_list = [];
     }
 
-    $allow_storage = array_keys($labeled_list);
+    $options = [];
+
+    foreach ($labeled_list as $key => $value) {
+      // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+      $options[$key] = $this->t($value);
+    }
+
     $allow_selection = $this->getFieldSetting('allow_selection');
 
     if (in_array(TRUE, $allow_selection)) {
-      $options = [];
-
-      foreach ($allow_storage as $key) {
-        if (array_key_exists($key, $allow_selection) && $allow_selection[$key]) {
-          $value = $labeled_list[$key];
-          if (is_string($value)) {
-            $options[$key] = $this->t('@label', ['@label' => $value]);
-          }
+      foreach (array_keys($labeled_list) as $key) {
+        if (!$allow_selection[$key]) {
+          unset($options[$key]);
         }
       }
-    }
-    else {
-      $options = $labeled_list;
     }
 
     $element['value'] = [

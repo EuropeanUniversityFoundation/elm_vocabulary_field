@@ -53,3 +53,41 @@ field.formatter.settings.elm_controlled_vocabulary_default:
     prefix:
       type: boolean
       label: Prefix the label with the respective code.
+
+# Views filter.
+views.filter_value.elm_vocabulary:
+  type: mapping
+  label: 'ELM vocabulary'
+  mapping:
+    value:
+      type: string
+      label: 'Value'
+
+views.filter.elm_vocabulary:
+  type: views_filter
+  label: 'ELM vocabulary'
+  mapping:
+    operator:
+      type: string
+      label: 'Operator'
+    value:
+      type: sequence
+      constraints:
+        FullyValidatable: ~
+      label: 'Values'
+      sequence:
+        type: string
+        label: 'Value'
+    expose:
+      type: mapping
+      label: 'Expose'
+      mapping:
+        reduce:
+          type: boolean
+          label: 'Reduce'
+    group_info:
+      mapping:
+        group_items:
+          sequence:
+            type: views.filter.group_item.elm_vocabulary
+            label: 'Group item'
