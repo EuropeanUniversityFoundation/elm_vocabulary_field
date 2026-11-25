@@ -75,8 +75,11 @@ class ElmVocabularyFilter extends InOperator {
    * {@inheritdoc}
    */
   public function getValueOptions() {
-    if (isset($this->valueOptions)) {
-      return $this->valueOptions;
+    /** @var array<string|int, mixed>|null $cached */
+    $cached = $this->valueOptions;
+
+    if ($cached !== NULL) {
+      return $cached;
     }
 
     $this->valueOptions = [];

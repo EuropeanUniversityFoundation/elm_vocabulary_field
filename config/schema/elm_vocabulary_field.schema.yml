@@ -42,7 +42,7 @@ field.widget.settings.elm_controlled_vocabulary_select:
   mapping:
     prefix:
       type: boolean
-      label: Prefix the label with the respective code.
+      label: Prefix the label with the respective code
 
 # Field formatter.
 # Prefix label with code.
@@ -52,42 +52,10 @@ field.formatter.settings.elm_controlled_vocabulary_default:
   mapping:
     prefix:
       type: boolean
-      label: Prefix the label with the respective code.
+      label: Prefix the label with the respective code
 
 # Views filter.
-views.filter_value.elm_vocabulary:
-  type: mapping
-  label: 'ELM vocabulary'
-  mapping:
-    value:
-      type: string
-      label: 'Value'
-
+# Inherits the schema of the core "in operator" filter.
 views.filter.elm_vocabulary:
-  type: views_filter
+  type: views.filter.in_operator
   label: 'ELM vocabulary'
-  mapping:
-    operator:
-      type: string
-      label: 'Operator'
-    value:
-      type: sequence
-      constraints:
-        FullyValidatable: ~
-      label: 'Values'
-      sequence:
-        type: string
-        label: 'Value'
-    expose:
-      type: mapping
-      label: 'Expose'
-      mapping:
-        reduce:
-          type: boolean
-          label: 'Reduce'
-    group_info:
-      mapping:
-        group_items:
-          sequence:
-            type: views.filter.group_item.elm_vocabulary
-            label: 'Group item'

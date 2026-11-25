@@ -31,8 +31,24 @@ final class MergeCommand extends Command {
    * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output): int {
-    $this->elmVocabularyFieldMerge->mergeTranslations();
-    $output->writeln('<info>ELM vocabulary translations merged.</info>');
+    try {
+      $result = $this->elmVocabularyFieldMerge->mergeTranslations();
+    }
+    catch (\RuntimeException $e) {
+      $output->writeln('<error>' . $e->getMessage() . '</error>');
+      return self::FAILURE;
+    }
+
+    foreach ($result['written'] as $langcode => $path) {
+      $output->writeln(sprintf('%s: %s', $langcode, basename($path)));
+    }
+
+    if ($result['skipped']) {
+      $output->writeln('<comment>Ignored: ' . implode(', ', $result['skipped']) . '</comment>');
+    }
+
+    $output->writeln(sprintf('<info>%d translation files merged.</info>', count($result['written'])));
+
     return self::SUCCESS;
   }
 
