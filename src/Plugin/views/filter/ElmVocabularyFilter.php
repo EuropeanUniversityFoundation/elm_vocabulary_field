@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\elm_vocabulary_field\Plugin\views\filter;
 
 use Drupal\Core\Entity\EntityFieldManagerInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\elm_vocabulary_field\ControlledVocabularyProviderInterface;
 use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\InOperator;
-use Drupal\elm_vocabulary_field\ControlledVocabularyProviderInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -14,11 +15,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @ingroup views_filter_handlers
  */
-#[ViewsFilter("elm_vocabulary")]
-class ElmVocabularyFilter extends InOperator implements ContainerFactoryPluginInterface {
+#[ViewsFilter('elm_vocabulary')]
+class ElmVocabularyFilter extends InOperator {
 
   /**
-   * The entity field manager service.
+   * The entity field manager.
    *
    * @var \Drupal\Core\Entity\EntityFieldManagerInterface
    */
@@ -32,21 +33,21 @@ class ElmVocabularyFilter extends InOperator implements ContainerFactoryPluginIn
   protected $provider;
 
   /**
-   * Constructs a new ElmVocabularyFilter instance.
+   * Constructs an ElmVocabularyFilter object.
    *
    * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
+   *   The plugin configuration.
    * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
+   *   The plugin ID.
    * @param mixed $plugin_definition
-   *   The plugin implementation definition.
+   *   The plugin definition.
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
-   *   The entity field manager service.
+   *   The entity field manager.
    * @param \Drupal\elm_vocabulary_field\ControlledVocabularyProviderInterface $provider
    *   The controlled vocabulary provider.
    */
   public function __construct(
-    $configuration,
+    array $configuration,
     $plugin_id,
     $plugin_definition,
     EntityFieldManagerInterface $entity_field_manager,
@@ -66,7 +67,7 @@ class ElmVocabularyFilter extends InOperator implements ContainerFactoryPluginIn
       $plugin_id,
       $plugin_definition,
       $container->get('entity_field.manager'),
-      $container->get('elm_vocabulary_field.provider')
+      $container->get('elm_vocabulary_field.provider'),
     );
   }
 
@@ -74,26 +75,24 @@ class ElmVocabularyFilter extends InOperator implements ContainerFactoryPluginIn
    * {@inheritdoc}
    */
   public function getValueOptions() {
-    $entity_type = $this->definition['entity_type'];
-    $field_name = $this->definition['field_name'];
-    $field_storage_definition = $this->entityFieldManager
-      ->getFieldStorageDefinitions($entity_type)[$field_name];
-
-    $settings = $field_storage_definition->getSettings();
-
-    $vocabulary_id = $settings['vocabulary'];
-    $vocabulary = $this->provider->getVocabulary($vocabulary_id);
-
-    $labeled_list = $vocabulary->getLabeledList();
-
-    $options = [];
-
-    foreach ($labeled_list as $key => $value) {
-      // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-      $options[$key] = $this->t($value);
+    if (isset($this->valueOptions)) {
+      return $this->valueOptions;
     }
 
-    $this->valueOptions = $options;
+    $this->valueOptions = [];
+
+    $storage = $this->entityFieldManager
+      ->getFieldStorageDefinitions($this->definition['entity_type'])[$this->definition['field_name']] ?? NULL;
+    $vocabulary_id = (string) ($storage?->getSetting('vocabulary') ?? '');
+    $labeled_list = $this->provider->getVocabulary($vocabulary_id)?->getLabeledList() ?? [];
+
+    foreach ($labeled_list as $key => $label) {
+      // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+      $this->valueOptions[$key] = $this->t((string) $label);
+    }
+
+    // Library order is by hash, so sort by the translated label.
+    uasort($this->valueOptions, static fn($a, $b) => strnatcasecmp((string) $a, (string) $b));
 
     return $this->valueOptions;
   }
