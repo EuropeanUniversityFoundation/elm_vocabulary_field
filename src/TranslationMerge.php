@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Drupal\elm_vocabulary_field;
 
+use Gettext\Translations;
+use Composer\InstalledVersions;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Language\LanguageManager;
-use Elm\ControlledVocabularyInterface;
-use Gettext\Loader\PoLoader;
 use Gettext\Generator\PoGenerator;
+use Gettext\Loader\PoLoader;
 use Gettext\Merge;
 
 /**
@@ -16,20 +17,40 @@ use Gettext\Merge;
  */
 class TranslationMerge implements TranslationMergeInterface {
 
+  /**
+   * The module machine name.
+   */
   const MODULE_NAME = 'elm_vocabulary_field';
 
   /**
-   * File system service.
+   * The Composer package providing the library translations.
+   */
+  const LIBRARY = 'euf/elm_vocabularies';
+
+  /**
+   * The directory receiving the compiled translations.
+   */
+  const TARGET_DIRECTORY = 'public://translations';
+
+  /**
+   * Library directories covered by a copy under a Drupal-friendly locale.
+   *
+   * Keep in sync with $localeCopies in the library build script.
+   */
+  const IGNORED_DIRECTORIES = ['en', 'no', 'pt'];
+
+  /**
+   * The file system service.
    *
    * @var \Drupal\Core\File\FileSystemInterface
    */
   protected FileSystemInterface $fileSystem;
 
   /**
-   * The constructor.
+   * Constructs a TranslationMerge object.
    *
    * @param \Drupal\Core\File\FileSystemInterface $file_system
-   *   File system service.
+   *   The file system service.
    */
   public function __construct(FileSystemInterface $file_system) {
     $this->fileSystem = $file_system;
@@ -38,74 +59,122 @@ class TranslationMerge implements TranslationMergeInterface {
   /**
    * {@inheritdoc}
    */
-  public function mergeTranslations(): void {
-    // Module translations.
-    $module_po_dir = realpath(__DIR__ . '/../translations');
-    $module_po_prefix = implode('.', [self::MODULE_NAME, 'base']);
-    $module_po_prefix_path = implode('/', [$module_po_dir, $module_po_prefix]);
-    $module_pot = implode('.', [$module_po_prefix, 'pot']);
-    $module_pot_path = implode('/', [$module_po_dir, $module_pot]);
+  public function mergeTranslations(): array {
+    $module_dir = dirname(__DIR__) . '/translations';
+    $module_pot = $module_dir . '/' . self::MODULE_NAME . '.base.pot';
+    $lib_dir = $this->libraryDirectory();
+    $target_dir = $this->targetDirectory();
 
-    // Drupal languages.
-    $drupal_lang_list = LanguageManager::getStandardLanguageList();
-
-    // Library translations.
-    $reflector = new \ReflectionClass(ControlledVocabularyInterface::class);
-    $lib_src_dir = dirname($reflector->getFileName());
-    $lib_po_base_path = realpath($lib_src_dir . '/../translations');
-    $lib_po_lang_list = array_diff(scandir($lib_po_base_path), ['.', '..']);
-
-    $lib_po_file_list = [];
-
-    foreach ($lib_po_lang_list as $lang) {
-      $lang_po_dir = implode('/', [$lib_po_base_path, $lang, 'LC_MESSAGES']);
-      $lib_po_lang_vocab_list = array_diff(scandir($lang_po_dir), ['.', '..']);
-      $lib_po_file_list[$lang] = [];
-
-      foreach ($lib_po_lang_vocab_list as $vocab_po_file) {
-        $vocab_po_file_path = implode('/', [$lang_po_dir, $vocab_po_file]);
-        $lib_po_file_list[$lang][] = $vocab_po_file_path;
-      }
-    }
-
-    // File mapping.
-    $po_prefix = implode('.', [self::MODULE_NAME, 'compiled']);
-    $public_path = $this->fileSystem->realpath('public://');
-    $public_po_path = implode('/', [$public_path, 'translations']);
-    $public_po_prefix_path = implode('/', [$public_po_path, $po_prefix]);
-    $merge = [];
-
-    foreach ($lib_po_file_list as $lib_lang => $files) {
-      $lang = strtolower(str_replace('_', '-', $lib_lang));
-      $merge[$lang] = [
-        'base' => implode('.', [$module_po_prefix_path, $lang, 'po']),
-        'extra' => $files,
-        'result' => implode('.', [$public_po_prefix_path, $lang, 'po']),
-      ];
-    }
-
-    // Load, merge and generate.
+    $drupal_languages = LanguageManager::getStandardLanguageList();
     $loader = new PoLoader();
     $generator = new PoGenerator();
-    $strategy = Merge::COMMENTS_OURS;
+    $result = ['written' => [], 'skipped' => []];
 
-    foreach ($merge as $lang => $item) {
-      if (array_key_exists($lang, $drupal_lang_list)) {
-        $base = is_file($item['base']) ? $item['base'] : $module_pot_path;
-        $result = $loader->loadFile($base);
+    foreach (glob($lib_dir . '/*', GLOB_ONLYDIR) ?: [] as $lang_dir) {
+      $dirname = basename($lang_dir);
 
-        $name = $drupal_lang_list[$lang][0];
-        $description = "Compiled translation for: " . $name . ".\n";
-
-        foreach ($item['extra'] as $file) {
-          $description .= "\nSource file: " . $file;
-          $extra = $loader->loadFile($file);
-          $result = $result->mergeWith($extra, $strategy);
-        }
-
-        $result->setDescription($description);
-        $generator->generateFile($result, $item['result']);
+      if (in_array($dirname, self::IGNORED_DIRECTORIES, TRUE)) {
+        $result['skipped'][] = $dirname;
+        continue;
       }
+
+      $langcode = strtolower(str_replace('_', '-', $dirname));
+      $base = $module_dir . '/' . self::MODULE_NAME . '.base.' . $langcode . '.po';
+      $translations = $loader->loadFile(is_file($base) ? $base : $module_pot);
+
+      if (!$translations->getLanguage()) {
+        $translations->setLanguage($langcode);
+      }
+
+      $sources = [];
+      foreach (glob($lang_dir . '/LC_MESSAGES/*.po') ?: [] as $file) {
+        $translations = $translations->mergeWith(
+          $loader->loadFile($file),
+          Merge::COMMENTS_OURS,
+        );
+        $sources[] = basename($file);
+      }
+
+      $translations->setDescription(sprintf(
+        "Compiled translation for: %s.\n\nSource files: %s",
+        $drupal_languages[$langcode][0] ?? $dirname,
+        implode(', ', $sources),
+      ));
+
+      $target = sprintf('%s/%s.compiled.%s.po', $target_dir, self::MODULE_NAME, $langcode);
+      $this->write($generator, $translations, $target);
+      $result['written'][$langcode] = $target;
+    }
+
+    return $result;
+  }
+
+  /**
+   * Returns the library translations directory.
+   *
+   * @return string
+   *   The absolute path.
+   *
+   * @throws \RuntimeException
+   *   If the library or its translations are not found.
+   */
+  private function libraryDirectory(): string {
+    $root = InstalledVersions::getInstallPath(self::LIBRARY);
+    $dir = $root === NULL ? '' : $root . '/translations';
+
+    if (!is_dir($dir)) {
+      throw new \RuntimeException('Library translations not found.');
+    }
+
+    return $dir;
+  }
+
+  /**
+   * Returns the target directory, creating it if needed.
+   *
+   * @return string
+   *   The absolute path.
+   *
+   * @throws \RuntimeException
+   *   If the directory is missing, not writable or not a local path.
+   */
+  private function targetDirectory(): string {
+    $uri = self::TARGET_DIRECTORY;
+    $ready = $this->fileSystem->prepareDirectory(
+      $uri,
+      FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS,
+    );
+    $path = $ready ? $this->fileSystem->realpath($uri) : FALSE;
+
+    if ($path === FALSE) {
+      throw new \RuntimeException('Cannot write to ' . $uri);
+    }
+
+    return $path;
+  }
+
+  /**
+   * Writes a translation file through a temporary file.
+   *
+   * The file is renamed into place, so a locale import never reads a partial
+   * file.
+   *
+   * @param \Gettext\Generator\PoGenerator $generator
+   *   The PO generator.
+   * @param \Gettext\Translations $translations
+   *   The translations to write.
+   * @param string $target
+   *   The absolute target path.
+   *
+   * @throws \RuntimeException
+   *   If the file cannot be written.
+   */
+  private function write(PoGenerator $generator, Translations $translations, string $target): void {
+    $temporary = $target . '.tmp';
+
+    if (!$generator->generateFile($translations, $temporary) || !rename($temporary, $target)) {
+      @unlink($temporary);
+      throw new \RuntimeException('Failed to write ' . basename($target));
     }
   }
 
