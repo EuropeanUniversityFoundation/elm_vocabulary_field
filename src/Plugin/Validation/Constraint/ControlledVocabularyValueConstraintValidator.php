@@ -7,7 +7,7 @@ namespace Drupal\elm_vocabulary_field\Plugin\Validation\Constraint;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldItemInterface;
-use Drupal\Core\TypedData\OptionsProviderInterface;
+use Drupal\elm_vocabulary_field\Plugin\Field\FieldType\ControlledVocabularyItem;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -41,7 +41,7 @@ final class ControlledVocabularyValueConstraintValidator extends ConstraintValid
    * {@inheritdoc}
    */
   public function validate(mixed $value, Constraint $constraint): void {
-    if (!$value instanceof FieldItemInterface || !$value instanceof OptionsProviderInterface) {
+    if (!$value instanceof ControlledVocabularyItem) {
       return;
     }
 
@@ -51,9 +51,15 @@ final class ControlledVocabularyValueConstraintValidator extends ConstraintValid
       return;
     }
 
-    $valid = in_array($current, $value->getPossibleValues(), TRUE)
-      && (in_array($current, $value->getSettableValues(), TRUE)
-        || in_array($current, $this->storedValues($value), TRUE));
+    $possible = $value->getPossibleValues();
+
+    // Values outside the vocabulary are reported by core's allowed values check.
+    if (!in_array($current, $possible, TRUE)) {
+      return;
+    }
+
+    $valid = in_array($current, $value->getAllowedValues(), TRUE)
+      || in_array($current, $this->storedValues($value), TRUE);
 
     if (!$valid) {
       $this->context->buildViolation($constraint->message)

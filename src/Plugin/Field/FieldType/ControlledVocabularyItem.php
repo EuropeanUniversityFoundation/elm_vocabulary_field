@@ -212,8 +212,28 @@ final class ControlledVocabularyItem extends FieldItemBase implements OptionsPro
 
   /**
    * {@inheritdoc}
+   *
+   * Core validates against this list, so it covers the whole vocabulary. The
+   * 'allow_selection' setting is enforced by the value constraint instead.
    */
   public function getSettableValues(?AccountInterface $account = NULL): array {
+    return $this->getPossibleValues($account);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSettableOptions(?AccountInterface $account = NULL): array {
+    return $this->getPossibleOptions($account);
+  }
+
+  /**
+   * Returns the term keys allowed by the 'allow_selection' setting.
+   *
+   * @return string[]
+   *   The checked keys, or all keys if none is checked.
+   */
+  public function getAllowedValues(): array {
     return self::allowedKeys(
       (string) $this->getSetting('vocabulary'),
       (array) $this->getSetting('allow_selection'),
@@ -221,12 +241,15 @@ final class ControlledVocabularyItem extends FieldItemBase implements OptionsPro
   }
 
   /**
-   * {@inheritdoc}
+   * Returns the options allowed by the 'allow_selection' setting.
+   *
+   * @return array<string|int, \Drupal\Core\StringTranslation\TranslatableMarkup>
+   *   The labels, keyed by term key.
    */
-  public function getSettableOptions(?AccountInterface $account = NULL): array {
+  public function getAllowedOptions(): array {
     return array_intersect_key(
-      $this->getPossibleOptions($account),
-      array_flip($this->getSettableValues($account)),
+      $this->getPossibleOptions(),
+      array_flip($this->getAllowedValues()),
     );
   }
 

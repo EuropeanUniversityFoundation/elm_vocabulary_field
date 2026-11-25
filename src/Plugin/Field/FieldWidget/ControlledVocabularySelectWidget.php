@@ -61,10 +61,10 @@ final class ControlledVocabularySelectWidget extends WidgetBase {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     /** @var \Drupal\elm_vocabulary_field\Plugin\Field\FieldType\ControlledVocabularyItem $item */
     $item = $items[$delta];
-    $keys = $item->getSettableValues();
+    $keys = $item->getAllowedValues();
     $current = (string) ($item->value ?? '');
 
-    // Keep a stored value that is valid but no longer allowed by the settings.
+    // Keep a stored value that is valid but no longer allowed.
     if ($current !== '' && in_array($current, $item->getPossibleValues(), TRUE)) {
       $keys[] = $current;
     }

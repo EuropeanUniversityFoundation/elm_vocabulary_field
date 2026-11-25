@@ -82,18 +82,16 @@ class TranslationMerge implements TranslationMergeInterface {
       $base = $module_dir . '/' . self::MODULE_NAME . '.base.' . $langcode . '.po';
       $translations = $loader->loadFile(is_file($base) ? $base : $module_pot);
 
-      if (!$translations->getLanguage()) {
-        $translations->setLanguage($langcode);
-      }
-
       $sources = [];
       foreach (glob($lang_dir . '/LC_MESSAGES/*.po') ?: [] as $file) {
         $translations = $translations->mergeWith(
           $loader->loadFile($file),
-          Merge::COMMENTS_OURS,
+          Merge::COMMENTS_OURS | Merge::HEADERS_OURS,
         );
         $sources[] = basename($file);
       }
+
+      $translations->setLanguage($langcode);
 
       $translations->setDescription(sprintf(
         "Compiled translation for: %s.\n\nSource files: %s",
