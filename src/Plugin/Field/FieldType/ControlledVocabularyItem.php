@@ -9,11 +9,17 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
+use Drupal\Core\TypedData\OptionsProviderInterface;
+use Drupal\elm_vocabulary_field\ControlledVocabularyProviderInterface;
 
 /**
  * Defines the 'elm_controlled_vocabulary' field type.
+ *
+ * @property string|null $value
+ *   The stored term key.
  */
 #[FieldType(
   id: "elm_controlled_vocabulary",
@@ -24,7 +30,48 @@ use Drupal\Core\TypedData\DataDefinition;
   default_widget: "elm_controlled_vocabulary_select",
   default_formatter: "elm_controlled_vocabulary_default",
 )]
-final class ControlledVocabularyItem extends FieldItemBase {
+final class ControlledVocabularyItem extends FieldItemBase implements OptionsProviderInterface {
+
+  /**
+   * Returns the vocabulary provider.
+   *
+   * Field items do not support dependency injection.
+   */
+  private static function provider(): ControlledVocabularyProviderInterface {
+    return \Drupal::service('elm_vocabulary_field.provider');
+  }
+
+  /**
+   * Returns the labeled list of a vocabulary.
+   *
+   * @param string $vocabulary_id
+   *   The vocabulary ID.
+   *
+   * @return array<string|int, string>
+   *   Labels keyed by term key, or an empty array for an unknown vocabulary.
+   */
+  private static function labeledList(string $vocabulary_id): array {
+    return self::provider()->getVocabulary($vocabulary_id)?->getLabeledList() ?? [];
+  }
+
+  /**
+   * Returns the term keys that may be selected.
+   *
+   * @param string $vocabulary_id
+   *   The vocabulary ID.
+   * @param array<string|int, bool> $allow_selection
+   *   The 'allow_selection' field setting.
+   *
+   * @return string[]
+   *   The checked keys, or all keys if none is checked.
+   */
+  private static function allowedKeys(string $vocabulary_id, array $allow_selection): array {
+    $keys = array_map('strval', array_keys(self::labeledList($vocabulary_id)));
+    $checked = array_map('strval', array_keys(array_filter($allow_selection)));
+    $selected = array_values(array_intersect($keys, $checked));
+
+    return $selected ?: $keys;
+  }
 
   /**
    * {@inheritdoc}
@@ -37,16 +84,13 @@ final class ControlledVocabularyItem extends FieldItemBase {
    * {@inheritdoc}
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data): array {
-    $settings = $this->getSettings();
-    // DI is not supported here.
-    $provider = \Drupal::service('elm_vocabulary_field.provider');
-
+    $element = [];
     $element['vocabulary'] = [
       '#type' => 'select',
       '#title' => $this->t('Controlled vocabulary'),
-      '#options' => $provider->getList(),
+      '#options' => self::provider()->getList(),
       '#empty_value' => '',
-      '#default_value' => $settings['vocabulary'],
+      '#default_value' => $this->getSetting('vocabulary'),
       '#required' => !$has_data,
       '#disabled' => $has_data,
     ];
@@ -65,41 +109,14 @@ final class ControlledVocabularyItem extends FieldItemBase {
    * {@inheritdoc}
    */
   public function fieldSettingsForm(array $form, FormStateInterface $form_state): array {
-    $settings = $this->getSettings();
-    $vocabulary_id = $settings['vocabulary'];
-
-    if (!empty($vocabulary_id)) {
-      // DI is not supported here.
-      $provider = \Drupal::service('elm_vocabulary_field.provider');
-      $vocabulary = $provider->getVocabulary($vocabulary_id);
-      $labeled_list = $vocabulary->getLabeledList();
-    }
-    else {
-      $labeled_list = [];
-    }
-
-    $options = [];
-
-    foreach ($labeled_list as $key => $value) {
-      if (is_string($value)) {
-        // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-        $options[$key] = $this->t($value);
-      }
-    }
-
+    $element = [];
     $element['allow_selection'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Allow selection'),
-      '#options' => $options,
-      '#description' => $this->t('If @condition then @result.', [
-        '@condition' => $this->t('no values are checked'),
-        '@result' => $this->t('all values can be selected'),
-      ]),
+      '#options' => $this->getPossibleOptions(),
+      '#default_value' => array_keys(array_filter((array) $this->getSetting('allow_selection'))),
+      '#description' => $this->t('If no values are checked, all values can be selected.'),
     ];
-
-    foreach ($settings['allow_selection'] as $key => $value) {
-      $element['allow_selection'][$key]['#default_value'] = $value;
-    }
 
     return $element;
   }
@@ -108,7 +125,7 @@ final class ControlledVocabularyItem extends FieldItemBase {
    * {@inheritdoc}
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition): array {
-
+    $properties = [];
     $properties['value'] = DataDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Value'))
       ->setRequired(TRUE);
@@ -120,39 +137,10 @@ final class ControlledVocabularyItem extends FieldItemBase {
    * {@inheritdoc}
    */
   public function getConstraints(): array {
-    $settings = $this->getSettings();
-    // DI is not supported here.
-    $provider = \Drupal::service('elm_vocabulary_field.provider');
-
-    $vocabulary_id = $settings['vocabulary'];
-    $vocabulary = $provider->getVocabulary($vocabulary_id);
-    $labeled_list = $vocabulary->getLabeledList();
-
-    $allow_storage = array_keys($labeled_list);
-    $allow_selection = $settings['allow_selection'];
-
-    if (in_array(TRUE, $allow_selection)) {
-      $allowed_values = [];
-
-      foreach ($allow_storage as $key) {
-        if (array_key_exists($key, $allow_selection) && $allow_selection[$key]) {
-          $allowed_values[] = $key;
-        }
-      }
-    }
-    else {
-      $allowed_values = $allow_storage;
-    }
-
     $constraints = parent::getConstraints();
-
-    $options['value']['AllowedValues'] = $allowed_values;
-    $options['value']['NotBlank'] = [];
-
-    $constraint_manager = \Drupal::typedDataManager()
-      ->getValidationConstraintManager();
-
-    $constraints[] = $constraint_manager->create('ComplexData', $options);
+    $constraints[] = \Drupal::typedDataManager()
+      ->getValidationConstraintManager()
+      ->create('ElmControlledVocabularyValue', []);
 
     return $constraints;
   }
@@ -188,15 +176,81 @@ final class ControlledVocabularyItem extends FieldItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition): array {
-    // DI is not supported here.
-    $provider = \Drupal::service('elm_vocabulary_field.provider');
+    $allowed = self::allowedKeys(
+      (string) $field_definition->getSetting('vocabulary'),
+      (array) $field_definition->getSetting('allow_selection'),
+    );
 
-    $vocabulary_id = $field_definition->getSetting('vocabulary');
-    $vocabulary = $provider->getVocabulary($vocabulary_id);
-    $labeled_list = $vocabulary->getLabeledList();
+    return ['value' => $allowed ? $allowed[array_rand($allowed)] : NULL];
+  }
 
-    $values['value'] = array_rand($labeled_list);
-    return $values;
+  /**
+   * {@inheritdoc}
+   */
+  public function getPossibleValues(?AccountInterface $account = NULL): array {
+    $list = self::labeledList((string) $this->getSetting('vocabulary'));
+
+    return array_map('strval', array_keys($list));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPossibleOptions(?AccountInterface $account = NULL): array {
+    $options = [];
+
+    foreach (self::labeledList((string) $this->getSetting('vocabulary')) as $key => $label) {
+      // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
+      $options[$key] = $this->t((string) $label);
+    }
+
+    // Library order is by hash, so sort by the translated label.
+    uasort($options, static fn($a, $b) => strnatcasecmp((string) $a, (string) $b));
+
+    return $options;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Core validates against this list, so it covers the whole vocabulary. The
+   * 'allow_selection' setting is enforced by the value constraint instead.
+   */
+  public function getSettableValues(?AccountInterface $account = NULL): array {
+    return $this->getPossibleValues($account);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSettableOptions(?AccountInterface $account = NULL): array {
+    return $this->getPossibleOptions($account);
+  }
+
+  /**
+   * Returns the term keys allowed by the 'allow_selection' setting.
+   *
+   * @return string[]
+   *   The checked keys, or all keys if none is checked.
+   */
+  public function getAllowedValues(): array {
+    return self::allowedKeys(
+      (string) $this->getSetting('vocabulary'),
+      (array) $this->getSetting('allow_selection'),
+    );
+  }
+
+  /**
+   * Returns the options allowed by the 'allow_selection' setting.
+   *
+   * @return array<string|int, \Drupal\Core\StringTranslation\TranslatableMarkup>
+   *   The labels, keyed by term key.
+   */
+  public function getAllowedOptions(): array {
+    return array_intersect_key(
+      $this->getPossibleOptions(),
+      array_flip($this->getAllowedValues()),
+    );
   }
 
 }

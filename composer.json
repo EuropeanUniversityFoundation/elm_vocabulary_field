@@ -22,8 +22,8 @@
         }
     ],
     "require": {
+        "drupal/core": "^10.6 || ^11",
         "euf/elm_vocabularies": "^0.1",
         "gettext/gettext": "^5.7"
-    },
-    "minimum-stability": "dev"
+    }
 }

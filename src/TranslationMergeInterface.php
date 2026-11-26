@@ -10,11 +10,15 @@ namespace Drupal\elm_vocabulary_field;
 interface TranslationMergeInterface {
 
   /**
-   * Merges translation files.
+   * Merges the library translations with those of this module.
    *
-   * Extracts translation files from the euf/elm_vocabularies library and
-   * merges them with the translation files provided by this module.
+   * @return array{written: array<string, string>, skipped: string[]}
+   *   The files written, keyed by langcode, and the library language
+   *   directories deliberately ignored.
+   *
+   * @throws \RuntimeException
+   *   If the library translations are missing or the target is not writable.
    */
-  public function mergeTranslations(): void;
+  public function mergeTranslations(): array;
 
 }

@@ -12,12 +12,21 @@ use Elm\ControlledVocabularyInterface;
 interface ControlledVocabularyProviderInterface {
 
   /**
-   * Returns the list of controlled vocabularies.
+   * Returns the labels of the available vocabularies.
+   *
+   * @return array<string, \Drupal\Core\StringTranslation\TranslatableMarkup>
+   *   Vocabulary labels, keyed by vocabulary ID.
    */
   public function getList(): array;
 
   /**
-   * Returns a controlled vocabulary per the ID provided.
+   * Returns a vocabulary by ID.
+   *
+   * @param string $vocabulary_id
+   *   The vocabulary ID.
+   *
+   * @return \Elm\ControlledVocabularyInterface|null
+   *   The vocabulary, or NULL if the ID is unknown.
    */
   public function getVocabulary(string $vocabulary_id): ?ControlledVocabularyInterface;
 

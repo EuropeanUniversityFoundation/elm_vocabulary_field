@@ -19,6 +19,29 @@ use Elm\ModeOfLearningAndAssessment;
 final class ControlledVocabularyProvider implements ControlledVocabularyProviderInterface {
 
   /**
+   * Vocabulary classes, keyed by vocabulary ID.
+   *
+   * The IDs are stored in field settings: do not rename them.
+   *
+   * @var array<string, class-string<\Elm\ControlledVocabularyInterface>>
+   */
+  private const VOCABULARIES = [
+    'assessment' => AssessmentType::class,
+    'learning_activity' => LearningActivityType::class,
+    'learning_opportunity' => LearningOpportunityType::class,
+    'learning_schedule' => LearningScheduleType::class,
+    'learning_setting' => LearningSettingType::class,
+    'learning_assessment' => ModeOfLearningAndAssessment::class,
+  ];
+
+  /**
+   * Vocabulary instances, keyed by vocabulary ID.
+   *
+   * @var array<string, \Elm\ControlledVocabularyInterface>
+   */
+  private array $instances = [];
+
+  /**
    * {@inheritdoc}
    */
   public function getList(): array {
@@ -36,37 +59,11 @@ final class ControlledVocabularyProvider implements ControlledVocabularyProvider
    * {@inheritdoc}
    */
   public function getVocabulary(string $vocabulary_id): ?ControlledVocabularyInterface {
-    switch ($vocabulary_id) {
-      case 'assessment':
-        $vocabulary = new AssessmentType();
-        break;
+    $class = self::VOCABULARIES[$vocabulary_id] ?? NULL;
 
-      case 'learning_activity':
-        $vocabulary = new LearningActivityType();
-        break;
-
-      case 'learning_opportunity':
-        $vocabulary = new LearningOpportunityType();
-        break;
-
-      case 'learning_schedule':
-        $vocabulary = new LearningScheduleType();
-        break;
-
-      case 'learning_setting':
-        $vocabulary = new LearningSettingType();
-        break;
-
-      case 'learning_assessment':
-        $vocabulary = new ModeOfLearningAndAssessment();
-        break;
-
-      default:
-        $vocabulary = NULL;
-        break;
-    }
-
-    return $vocabulary;
+    return $class === NULL
+      ? NULL
+      : ($this->instances[$vocabulary_id] ??= new $class());
   }
 
 }
